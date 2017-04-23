@@ -28,7 +28,8 @@ func light() {
 	for {
 		lighting, err := sensor.Lighting()
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Printf("Lighting is %v lx\n", lighting)
 

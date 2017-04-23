@@ -1,35 +1,30 @@
 package main
 
 import (
-	"log"
+	"os"
 
-	"gobot.io/x/gobot"
-	"gobot.io/x/gobot/drivers/aio"
-	"gobot.io/x/gobot/platforms/firmata"
+	logging "github.com/op/go-logging"
 )
 
+var logger = logging.MustGetLogger("lior")
+
 func main() {
-	adaptor := firmata.NewAdaptor("/dev/ttyACM0")
+	// Set up logging for stdout (colors).
+	logBackend := logging.NewLogBackend(os.Stderr, "", 0)
+	logFormat := logging.MustStringFormatter(`%{color}%{time:15:04:05.000} %{shortfunc} ▶ %{level:.4s} %{id:03x}%{color:reset} %{message}`)
+	logBackendFormatter := logging.NewBackendFormatter(logBackend, logFormat)
 
-	// Analog Inputs through firmata (arduino)
-	soilSensor := aio.NewAnalogSensorDriver(adaptor, "1")
-	waterPhSensor := aio.NewAnalogSensorDriver(adaptor, "3")
-	work := func() {
-		soilSensor.On(soilSensor.Event("data"), func(data interface{}) {
-			//log.Print("soil moisture (analog voltage) ", data)
-			soilHumidity.Set(float64(data.(int)))
-		})
-		waterPhSensor.On(waterPhSensor.Event("data"), func(data interface{}) {
-			log.Print("water ph (analog voltage) ", data)
-			waterPh.Set(float64(data.(int)))
-		})
+	// Set up logging for file.
+	logFileFp, err := os.OpenFile("lior.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		logger.Errorf("Failed to open '%s': %s\n", "lior.log", err.Error())
+		return
 	}
+	defer logFileFp.Close()
+	logFileBackend := logging.NewLogBackend(logFileFp, "", 0)
+	logFileBackendFormatter := logging.NewBackendFormatter(logFileBackend, logFormat)
+	logging.SetBackend(logBackendFormatter, logFileBackendFormatter)
 
-	robot := gobot.NewRobot("sensorBot",
-		[]gobot.Connection{adaptor},
-		[]gobot.Device{soilSensor, waterPhSensor},
-		work,
-	)
-
-	robot.Start()
+	// Wait indefinitely.
+	select {}
 }

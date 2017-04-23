@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"log"
-
 	"github.com/yryz/ds18b20"
 )
 
@@ -20,7 +18,7 @@ func startWater() {
 		fmt.Println(err)
 	}
 	if sensors == nil {
-		fmt.Println("sensor not found")
+		fmt.Println("water sensor not found")
 		return
 	}
 
@@ -32,7 +30,7 @@ func startWater() {
 				waterTemp.Set(t)
 				fmt.Printf("sensor: %s temperature: %.2f°C\n", sensor, t)
 			} else {
-				log.Println(err)
+				logger.Error(err)
 			}
 		}
 		time.Sleep(60 * time.Second)
