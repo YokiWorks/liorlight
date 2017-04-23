@@ -24,7 +24,7 @@ func init() {
 }
 
 func poolAir() {
-	out, err := exec.Command("airsensor.py").Output()
+	out, err := exec.Command("airstream.py").Output()
 	if err != nil {
 		logger.Fatal(err)
 	}
